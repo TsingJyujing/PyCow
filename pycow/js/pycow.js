@@ -111,10 +111,21 @@ var range = function (start, stop, step) {
 	return out;
 };
 
+if (!isdefined(console)){
+    var console = {log:function(str_in){
+        $.print(str_in);
+    }};
+}else{
+    if (!isdefined(console.log)){
+        var console = {log:function(str_in){
+            $.print(str_in);
+        }};
+    }
+}
+
 var dbgprint = function () {
 	var s = "";
 	var first = true;
-	
 	for (var i = 0; i < arguments.length; i++) {
 		if (first){
 			first = false;
@@ -123,9 +134,7 @@ var dbgprint = function () {
         }
 		s += str(arguments[i]);
 	}
-	//Platform: Test Panel
-	//$.print(s);
-    console.log(s);
+	console.log(s);
 }
 
 /*  
