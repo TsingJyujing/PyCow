@@ -21,14 +21,19 @@
  This script contains some Python-compatibility functions and objects.
 */
 
+
+function isdefined(x){
+	return !(x===undefined);
+}
+
 /**
  * len(object) -> integer
  *
  * Return the number of items of a sequence or mapping.
  */
-len = function (obj) {
+var len = function (obj) {
 	var l = 0;
-	switch ($type(obj)) {
+	switch (typeof(obj)) {
 		case 'array':
 		case 'string':
 			return obj.length;
@@ -47,17 +52,18 @@ len = function (obj) {
  * Return a nice string representation of the object.
  * If the argument is a string, the return value is the same object.
  */
-str = function (obj) {
-	if (!$defined(obj))
-		return "null";
-	else if ($defined(obj.__str__))
-		return obj.__str__();
-	else if ($type(obj) == "number")
-		return String(obj);
-	else if ($type(obj) == "string")
-		return obj;
-	else
-		return repr(obj);
+function str(obj) {
+    if (!isdefined(obj)){
+        return "undefined";
+    }else if (isdefined(obj.__str__)){
+        return obj.__str__();
+    }else if (typeof(obj) == "number"){
+        return String(obj);
+    }else if (typeof(obj) == "string"){
+        return obj;
+    }else{
+        return repr(obj);
+    }
 };
 
 /**
@@ -66,15 +72,16 @@ str = function (obj) {
  * Return the canonical string representation of the object.
  * For most object types, eval(repr(object)) == object.
  */
-repr = function (obj) {
-	if ($defined(obj.__repr__))
-		return obj.__repr__();
-	else if ($type(obj) == "boolean")
-		return String(obj);
-	else if ($type(obj) == "array")
-		return "["+obj.map(repr).join(", ")+"]";
-	else
-		return JSON.encode(obj);
+function repr(obj) {
+    if (!isdefined(obj.__repr__)){
+        return obj.__repr__();
+    }else if (typeof(obj) == "boolean"){
+        return String(obj);
+    }else if (typeof(obj) == "array"){
+        return "["+obj.map(repr).join(", ")+"]";
+    }else{
+        return JSON.stringify(obj);
+    }
 };
 
 /**
@@ -86,43 +93,39 @@ repr = function (obj) {
  * For example, range(4) returns [0, 1, 2, 3].  The end point is omitted!
  * These are exactly the valid indices for a list of 4 elements.
  */
-range = function (start, stop, step) {
-	if (!$defined(stop)) {
+var range = function (start, stop, step) {
+	if (!isdefined(stop)) {
 		stop = start;
 		start = 0;
 	}
-	if (!$defined(step) || step == 0)
+	if (!isdefined(step) || step == 0)
 		step = 1;
 	out = new Array();
 	if (step > 0) {
 		for (var i = start; i < stop; i += step)
 			out.push(i);
-	}
-	else {
+	} else {
 		for (var i = start; i > stop; i += step)
 			out.push(i);
 	}
 	return out;
 };
 
-dbgprint = function () {
+var dbgprint = function () {
 	var s = "";
 	var first = true;
 	
 	for (var i = 0; i < arguments.length; i++) {
-		if (first)
+		if (first){
 			first = false;
-		else
+		} else {
 			s += " ";
+        }
 		s += str(arguments[i]);
 	}
-	
-	if ($defined(window.console))
-		window.console.info(s);
-	else if (Browser.Engine.presto && $defined(opera.postError))
-		opera.postError(s);
-	else
-		alert(s);
+	//Platform: Test Panel
+	//$.print(s);
+    console.log(s);
 }
 
 /*  
@@ -132,13 +135,13 @@ dbgprint = function () {
 
 sprintfWrapper = {
 	init : function () {
-		if (!$defined(arguments))
+		if (!isdefined(arguments))
 			return null;
 		if (arguments.length < 1)
 			return null;
-		if ($type(arguments[0]) != "string")
+		if (typeof(arguments[0]) != "string")
 			return null;
-		if (!$defined(RegExp))
+		if (!isdefined(RegExp))
 			return null;
 		
 		var string = arguments[0];
@@ -280,51 +283,51 @@ utf8encode = function (string) {
 
 sprintf = sprintfWrapper.init;
 
-String.implement({
-	sprintf: function () {
-		var args = $A(arguments);
-		args.splice(0, 0, this);
-		return sprintfWrapper.init.apply(this, args);
-	},
-	startswith: function (s) {
-		return this.slice(0,s.length) == s;
-	},
-	endswith: function (s) {
-		return this.slice(this.length-s.length) == s;
-	},
-	encode: function (encoding) {
-		encoding = encoding.toLowerCase();
-		if (encoding == "utf8" || encoding == "utf-8")
-			return utf8encode(this);
-		throw Error("Unknown encoding: " + encoding);
-	}
-});
 
-String.alias("toLowerCase", "lower");
-String.alias("toUpperCase", "upper");
-Hash.alias("extend", "update");
+String.prototype.sprintf = function () {
+    var args = new Array(this.toString());
+    var params = Array.prototype.slice.call(arguments);
+    for (var param in params){
+        args.push(params[param]);
+    }
+    return sprintfWrapper.init.apply(this,args);
+}
+String.prototype.lower = String.prototype.toLowerCase
+String.prototype.upper = String.prototype.toUpperCase
+String.prototype.update = String.prototype.extend
+String.prototype.startswith =function (s) {
+    return this.slice(0,s.length) == s;
+}
+String.prototype.endswith = function (s) {
+    return this.slice(this.length-s.length) == s;
+}
+String.prototype.encode = function (encoding) {
+    encoding = encoding.toLowerCase();
+    if (encoding == "utf8" || encoding == "utf-8")
+        return utf8encode(this);
+    throw Error("Unknown encoding: " + encoding);
+}
 
-Array.implement({
-	/**
-	 * A.insert(index, object) -- insert object before index
-	 */
-	insert: function (index, object) {
-		this.splice(index, 0, object);
-	},
-	/**
-	 * A.append(object) -- append object to array
-	 */
-	append: function (object) {
-		this[this.length] = object;
-	}
-});
+/**
+ * A.insert(index, object) -- insert object before index
+ */
+Array.prototype.insert = function (index, object) {
+    this.splice(index, 0, object);
+}
+/**
+ * A.append(object) -- append object to array
+ */
+
+Array.prototype.append = function (object) {
+    this[this.length] = object;
+}
 
 /**
  * A.pop([index]) -> item -- remove and return item at index (default last).
  * Returns undefined if list is empty or index is out of range.
  */
 Array.prototype.pop = function (index) {
-	if (!$defined(index))
+	if (!isdefined(index))
 		index = this.length-1;
 
 	if (index == -1 || index >= this.length)
@@ -337,10 +340,20 @@ Array.prototype.pop = function (index) {
 IndexError = function () {};
 IndexError.prototype = new Error;
 
+
+var new_class = function(properity_map){
+    var type_return = function(){
+        properity_map['initialize'].apply(this,Array.prototype.slice.call(arguments));
+    }
+    for (var funname in properity_map){
+        type_return.prototype[funname] = properity_map[funname];
+    }
+    return type_return;
+}
 /**
  * Java-Style iterator class.
  */
-_Iterator = new Class({
+_Iterator = new_class({
 	initialize: function (object) {
 		this.obj = object;
 		this.pos = -1;
@@ -388,13 +401,13 @@ _Iterator = new Class({
 	}
 });
 
-XRange = new Class({
+XRange = new_class({
 	initialize: function (start, stop, step) {
-		if (!$defined(stop)) {
+		if (!isdefined(stop)) {
 			stop = start;
 			start = 0;
 		}
-		if (!$defined(step) || step == 0)
+		if (!isdefined(step) || step == 0)
 			step = 1;
 		this.start = start;
 		this.stop = stop;

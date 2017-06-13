@@ -972,7 +972,7 @@ class PyCow(ast.NodeVisitor):
 		if len(self.__curr_context.docstring) > 0:
 			self.__write_docstring(self.__curr_context.docstring)
 			self.__do_indent()
-		self.__write("var %s = new Class({\n" % (c.name))
+		self.__write("var %s = new_class({\n" % (c.name))
 		self.__indent()
 		
 		# Special decorators
@@ -1131,7 +1131,7 @@ class PyCow(ast.NodeVisitor):
 		if len(args.defaults) > 0:
 			first = len(args.args) - len(args.defaults)
 			for i in xrange(len(args.defaults)):
-				self.__write_indented("if (!$defined(")
+				self.__write_indented("if (!isdefined(")
 				self.visit(args.args[first+i])
 				self.__write(")) ")
 				self.visit(args.args[first+i])
@@ -1262,10 +1262,10 @@ class PyCow(ast.NodeVisitor):
 	def __build_namespace(self, namespace):
 		namespace = namespace.split(".")
 		
-		self.__write("window.%s = $defined(window.%s) ? window.%s : {};\n" % (namespace[0], namespace[0], namespace[0]))
+		self.__write("window.%s = isdefined(window.%s) ? window.%s : {};\n" % (namespace[0], namespace[0], namespace[0]))
 		
 		for i in xrange(1, len(namespace) - 1):
-			self.__write("%s.%s = $defined(%s.%s) ? %s.%s : {};\n" % (namespace[i-1], namespace[0], namespace[i-1], namespace[0], namespace[i-1], namespace[0]))
+			self.__write("%s.%s = isdefined(%s.%s) ? %s.%s : {};\n" % (namespace[i-1], namespace[0], namespace[i-1], namespace[0], namespace[i-1], namespace[0]))
 		self.__write("\n")
 
 def translate_string(input, indent = "\t", namespace = "", warnings = True):
