@@ -29,7 +29,7 @@
 # No kwargs.
 #
 
-import ast, simplejson, re, random
+import ast, json, re, random
 from StringIO import StringIO
 
 __all__ = ["ParseError", "translate_string", "translate_file"]
@@ -393,7 +393,7 @@ class PyCow(ast.NodeVisitor):
 		Cleverly uses JSON to convert it ;)
 		
 		"""
-		self.__write(simplejson.dumps(s.s))
+		self.__write(json.dumps(s.s))
 	
 	def visit_Call(self, c):
 		"""

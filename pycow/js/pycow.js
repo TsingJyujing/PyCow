@@ -111,18 +111,6 @@ var range = function (start, stop, step) {
 	return out;
 };
 
-if (!isdefined(console)){
-    var console = {log:function(str_in){
-        $.print(str_in);
-    }};
-}else{
-    if (!isdefined(console.log)){
-        var console = {log:function(str_in){
-            $.print(str_in);
-        }};
-    }
-}
-
 var dbgprint = function () {
 	var s = "";
 	var first = true;
@@ -359,6 +347,8 @@ var new_class = function(properity_map){
     }
     return type_return;
 }
+
+
 /**
  * Java-Style iterator class.
  */

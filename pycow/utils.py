@@ -22,7 +22,7 @@
 #
 
 from types import FunctionType, ClassType
-import copy, re, simplejson
+import copy, re, json
 
 __all__ = ["Events", "Options", "Array", "Hash", "JSON"]
 
@@ -170,10 +170,10 @@ class Hash(dict):
 
 class JSON(object):
 	def encode(self, obj):
-		return simplejson.dumps(obj)
+		return json.dumps(obj)
 	
 	def decode(self, string, secure=None):
-		return simplejson.loads(string)
+		return json.loads(string)
 
 # Singleton
 JSON = JSON()
